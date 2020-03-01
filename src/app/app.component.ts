@@ -24,6 +24,8 @@ export class AppComponent {
       // Create map instance
   var chart = am4core.create("chartdiv", am4maps.MapChart);
 
+ 
+
   var mapData = [
     { "id": "AF", "name": "Afghanistan", "value": 32358260, "color": chart.colors.getIndex(0) },
     { "id": "DZ", "name": "Algeria", "value": 35980193, "color": chart.colors.getIndex(2) },
@@ -50,8 +52,36 @@ export class AppComponent {
   chart.geodata = am4geodata_worldLow;
 
   // Set projection
-  chart.projection = new am4maps.projections.Miller();
+  // Set projection
+  chart.projection = new am4maps.projections.Orthographic();
+  chart.panBehavior = "rotateLongLat";
+  chart.padding(20,20,20,20);
 
+  // Add zoom control
+  chart.zoomControl = new am4maps.ZoomControl();
+
+  var homeButton = new am4core.Button();
+  homeButton.events.on("hit", function(){
+    chart.goHome();
+  });
+
+  homeButton.icon = new am4core.Sprite();
+  homeButton.padding(7, 5, 7, 5);
+  homeButton.width = 30;
+  homeButton.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
+  homeButton.marginBottom = 10;
+  homeButton.parent = chart.zoomControl;
+  homeButton.insertBefore(chart.zoomControl.plusButton);
+
+  chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color("#bfa58d");
+  chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
+  chart.deltaLongitude = 20;
+  chart.deltaLatitude = -20;
+
+  // limits vertical rotation
+  chart.adapter.add("deltaLatitude", function(delatLatitude){
+      return am4core.math.fitToRange(delatLatitude, -90, 90);
+  })
   // Create map polygon series
   var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
   polygonSeries.exclude = ["AQ"];
@@ -107,7 +137,7 @@ heatLegend.align = "right";
 heatLegend.valign = "bottom";
 heatLegend.width = am4core.percent(20);
 heatLegend.marginRight = am4core.percent(4);
-heatLegend.minValue = 0;
+heatLegend.minValue = 100000;
 heatLegend.maxValue = 40000000;
 
 // Set up custom heat map legend labels using axis ranges
